@@ -8,7 +8,8 @@ let peerjsConf = {
 
 if(process.env.NODE_ENV === 'production') {
   peerjsConf = {
-    host: RPConfig.signalServer
+    host: RPConfig.signalServer,
+    secure: true
   };
 }
 
@@ -30,7 +31,7 @@ const createPeer = (id, ip, turnOnly, signalCredentials) => {
       iceTransportPolicy: turnOnly?  "relay": "all"
     },
     ...signalCredentials,
-    debug: 3
+    debug: 1
   });
   return peer
 };

@@ -1,5 +1,7 @@
 import App from './../App';
 
 it('renders without crashing', () => {
-  new App();
+  if(!App.init) {
+    throw new Error()
+  }
 });
