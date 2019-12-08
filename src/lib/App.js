@@ -1,17 +1,3 @@
-import './css/App.css';
+import RPTurn from './rpturn.js'
 
-class App {
-  myVar = true;
-
-  constructor(){
-    const { myArrowMethod, myVar } = this;
-    console.log("Lib constructor called", myVar);
-    myArrowMethod();
-  }
-
-  myArrowMethod = () => {
-    console.log("Arrow method fired");
-  }
-}
-
-export default App;
+export default RPTurn;
