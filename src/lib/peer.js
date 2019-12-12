@@ -31,7 +31,7 @@ const createPeer = (id, ip, turnOnly, signalCredentials) => {
       iceTransportPolicy: turnOnly?  "relay": "all"
     },
     ...signalCredentials,
-    debug: 1
+    debug: 3
   });
   return peer
 };

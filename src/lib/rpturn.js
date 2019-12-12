@@ -23,7 +23,7 @@ const getServerList = (credentials) => {
 const checkServersLatency = (ips) => {
   return Promise.all(ips.map(ip => {
     let start = window.performance.now();
-    return createApiGetRequest(`http://${ip}${RPConfig.healthCheckEndpoint}`)
+    return createApiGetRequest(`https://${ip}${RPConfig.healthCheckEndpoint}`)
       .then(() => {
         let delay = window.performance.now() - start;
         return {
