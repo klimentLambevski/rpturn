@@ -1,4 +1,4 @@
-import Peer from 'peerjs';
+import Peer from '@kliment/peerjs';
 import RPConfig from "./config";
 
 let peerjsConf = {
@@ -14,24 +14,28 @@ if(process.env.NODE_ENV === 'production') {
 }
 
 
-const createPeer = (id, ip, turnOnly, signalCredentials) => {
+const createPeer = (id, {ip}, turnOnly, signalCredentials, debug) => {
+  let iceServers = [{
+    urls: [`turn:${ip}`],
+    username: signalCredentials.key,
+    credential: signalCredentials.token,
+  }, {
+    urls: [`stun:${ip}`],
+    username: signalCredentials.key,
+    credential: signalCredentials.token,
+  }];
+
+  console.log(iceServers);
+
   const peer = new Peer(id, {
     ...peerjsConf,
     path: '/signal',
     config: {
-      iceServers: [{
-        urls: [`turn:${ip}`],
-        username: signalCredentials.key,
-        credential: signalCredentials.token,
-      }, {
-        urls: [`stun:${ip}`],
-        username: signalCredentials.key,
-        credential: signalCredentials.token,
-      }],
+      iceServers: iceServers,
       iceTransportPolicy: turnOnly?  "relay": "all"
     },
     ...signalCredentials,
-    debug: 3
+    debug
   });
   return peer
 };

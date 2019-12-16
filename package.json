@@ -1,6 +1,6 @@
 {
   "name": "@kliment/rpturn",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Library for WebRTC connection to RemotePC Turn infrastructure",
   "main": "build/index.js",
   "scripts": {
@@ -166,6 +166,7 @@
     ]
   },
   "dependencies": {
+    "@kliment/peerjs": "^1.1.1",
     "peerjs": "^1.1.0"
   }
 }
