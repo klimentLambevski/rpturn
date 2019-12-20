@@ -13,6 +13,12 @@ const init = ({credentials, id, turnOnly = false, debug = 0, turnServer}) => {
     })
 };
 
+const getServer = ({credentials}) => {
+    let signalCredentials = getUsernamePasswordFromCredentials(credentials);
+    return getServerList(signalCredentials)
+        .then((ips) => checkServersLatency(ips))
+};
+
 const getServerList = (credentials) => {
   return getServerListApi(RPConfig.apiUrl, {
     key: credentials.key,
@@ -68,5 +74,6 @@ function shuffle(array) {
 }
 
 export default {
-  init
+  init,
+  getServer
 }
