@@ -13,10 +13,22 @@ const init = ({credentials, id, turnOnly = false, debug = 0, turnServer}) => {
     })
 };
 
-const getServer = ({credentials}) => {
+const getIceServers = ({credentials}) => {
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
     return getServerList(signalCredentials)
         .then((ips) => checkServersLatency(ips))
+        .then(res => {
+            let {ip} = res && res.delay < 4000? res: [{ip: RPConfig.fallbackTurnServer}];
+            return [{
+                urls: [`turn:${ip}`],
+                username: signalCredentials.key,
+                credential: signalCredentials.token,
+            }, {
+                urls: [`stun:${ip}`],
+                username: signalCredentials.key,
+                credential: signalCredentials.token,
+            }];
+        })
 };
 
 const getServerList = (credentials) => {
@@ -74,6 +86,6 @@ function shuffle(array) {
 }
 
 export default {
-  init,
-  getServer
+    init,
+    getIceServers
 }
