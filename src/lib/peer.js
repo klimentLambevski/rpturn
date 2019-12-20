@@ -1,4 +1,4 @@
-import Peer from '@kliment/peerjs';
+import {Peer} from './peerjs/peer';
 import RPConfig from "./config";
 
 let peerjsConf = {
@@ -25,7 +25,7 @@ const createPeer = (id, {ip}, turnOnly, signalCredentials, debug) => {
     credential: signalCredentials.token,
   }];
 
-  console.log(iceServers);
+  console.log(iceServers, Peer);
 
   const peer = new Peer(id, {
     ...peerjsConf,

@@ -3,13 +3,13 @@ import {createPeer} from "./peer";
 import RPConfig from "./config";
 import {createApiGetRequest, getServerListApi} from "./api";
 
-const init = ({credentials, id, turnOnly = false, debug = 0}) => {
+const init = ({credentials, id, turnOnly = false, debug = 0, turnServer}) => {
   let signalCredentials = getUsernamePasswordFromCredentials(credentials);
   return getServerList(signalCredentials)
     .then((ips) => checkServersLatency(ips))
     .then((res) => {
       res = res && res.delay < 4000? res: [{ip: RPConfig.fallbackTurnServer}];
-      return createPeer(id, res, turnOnly, signalCredentials, debug)
+      return createPeer(id, turnServer? {ip: turnServer}: res, turnOnly, signalCredentials, debug)
     })
 };
 

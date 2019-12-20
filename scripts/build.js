@@ -134,7 +134,7 @@ function build(previousFileSizes) {
 
   console.log('Creating an optimized production build...');
 
-  const compiler = webpack({...config, externals: {'@kliment/peerjs': '@kliment/peerjs'}});
+  const compiler = webpack({...config, externals: {}});
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
       let messages;
