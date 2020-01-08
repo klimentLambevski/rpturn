@@ -1,6 +1,6 @@
 {
-  "name": "@kliment/rpturn",
-  "version": "0.2.4",
+  "name": "rpturn",
+  "version": "1.0.0",
   "description": "Library for WebRTC connection to RemotePC Turn infrastructure",
   "main": "build/index.js",
   "scripts": {

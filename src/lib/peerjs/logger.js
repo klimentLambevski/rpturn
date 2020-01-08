@@ -8,10 +8,10 @@ Prints log messages depending on the debug level passed in. Defaults to 0.
 3  Prints all logs.
 */
 export const LogLevel = {
-    Disabled: 'Disabled',
-    Errors: 'Errors',
-    Warnings: 'Warnings',
-    All: 'All'
+    Disabled: 0,
+    Errors: 1,
+    Warnings: 2,
+    All: 3
 };
 
 class Logger {

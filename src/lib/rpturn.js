@@ -1,24 +1,26 @@
 import {getUsernamePasswordFromCredentials} from "./utils";
 import {createPeer} from "./peer";
-import RPConfig from "./config";
+import {getRpConfig} from "./config";
 import {createApiGetRequest, getServerListApi} from "./api";
 
-const init = ({credentials, id, turnOnly = false, debug = 0, turnServer}) => {
-  let signalCredentials = getUsernamePasswordFromCredentials(credentials);
-  return getServerList(signalCredentials)
-    .then((ips) => checkServersLatency(ips))
-    .then((res) => {
-      res = res && res.delay < 4000? res: [{ip: RPConfig.fallbackTurnServer}];
-      return createPeer(id, turnServer? {ip: turnServer}: res, turnOnly, signalCredentials, debug)
-    })
+const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false}) => {
+    const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
+    let signalCredentials = getUsernamePasswordFromCredentials(credentials);
+    return getServerList(signalCredentials, isDev)
+        .then((ips) => checkServersLatency(ips, isDev))
+        .then((res) => {
+            res = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
+            return createPeer(id, turnServer ? {ip: turnServer} : res, turnOnly, signalCredentials, debug)
+        })
 };
 
-const getIceServers = ({credentials}) => {
+const getIceServers = ({credentials, isDev}) => {
+    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
-    return getServerList(signalCredentials)
+    return getServerList(signalCredentials, isDev)
         .then((ips) => checkServersLatency(ips))
         .then(res => {
-            let {ip} = res && res.delay < 4000? res: [{ip: RPConfig.fallbackTurnServer}];
+            let {ip} = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return [{
                 urls: [`turn:${ip}`],
                 username: signalCredentials.key,
@@ -31,35 +33,37 @@ const getIceServers = ({credentials}) => {
         })
 };
 
-const getServerList = (credentials) => {
-  return getServerListApi(RPConfig.apiUrl, {
-    key: credentials.key,
-    token: credentials.token
-  }).then(({data: {ips}}) => ips)
+const getServerList = (credentials, isDev) => {
+    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    return getServerListApi(RPConfig.apiUrl, {
+        key: credentials.key,
+        token: credentials.token
+    }).then(({data: {ips}}) => ips)
 };
 
-const checkServersLatency = (ips) => {
-  return Promise.all(ips.map(ip => {
-    let start = window.performance.now();
-    return createApiGetRequest(`https://${ip}${RPConfig.healthCheckEndpoint}`)
-      .then(() => {
-        let delay = window.performance.now() - start;
-        return {
-          delay,
-          ip
-        }
-      })
-      .catch(() => {
-        return {
-          delay: 2000,
-          ip
-        }
-      });
-  }))
-    .then(latencyList => {
-      let min = Math.min(...latencyList.map(ll => ll.delay));
-      return latencyList.find((ll) => ll.delay === min)
-    })
+const checkServersLatency = (ips, isDev) => {
+    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    return Promise.all(ips.map(ip => {
+        let start = window.performance.now();
+        return createApiGetRequest(`https://${ip}${RPConfig.healthCheckEndpoint}`)
+            .then(() => {
+                let delay = window.performance.now() - start;
+                return {
+                    delay,
+                    ip
+                }
+            })
+            .catch(() => {
+                return {
+                    delay: 2000,
+                    ip
+                }
+            });
+    }))
+        .then(latencyList => {
+            let min = Math.min(...latencyList.map(ll => ll.delay));
+            return latencyList.find((ll) => ll.delay === min)
+        })
 };
 
 function randomIntFromInterval(min, max) { // min and max included

@@ -1,20 +1,22 @@
 import {Peer} from './peerjs/peer';
-import RPConfig from "./config";
+import {getRpConfig} from "./config";
 
-let peerjsConf = {
-  host: 'localhost',
-  port: 4000
-};
+const createPeer = (id, {ip}, turnOnly, signalCredentials, debug, isDev) => {
 
-if(process.env.NODE_ENV === 'production') {
-  peerjsConf = {
-    host: RPConfig.signalServer,
-    secure: true
+  const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+
+  let peerjsConf = {
+    host: 'localhost',
+    port: 4000
   };
-}
 
+  if(process.env.NODE_ENV === 'production') {
+    peerjsConf = {
+      host: RPConfig.signalServer,
+      secure: true
+    };
+  }
 
-const createPeer = (id, {ip}, turnOnly, signalCredentials, debug) => {
   let iceServers = [{
     urls: [`turn:${ip}`],
     username: signalCredentials.key,
