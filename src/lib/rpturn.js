@@ -22,11 +22,11 @@ const getIceServers = ({credentials, isDev}) => {
         .then(res => {
             let {ip} = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return [{
-                urls: [`turn:${ip}`],
+                    urls: [`turn:${ip}${isDev? '': ':5349'}`],
                 username: signalCredentials.key,
                 credential: signalCredentials.token,
             }, {
-                urls: [`stun:${ip}`],
+                urls: [`stun:${ip}${isDev? '': ':5349'}`],
                 username: signalCredentials.key,
                 credential: signalCredentials.token,
             }];

@@ -1,6 +1,6 @@
 {
   "name": "rpturn",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Library for WebRTC connection to RemotePC Turn infrastructure",
   "main": "build/index.js",
   "scripts": {

@@ -18,11 +18,11 @@ const createPeer = (id, {ip}, turnOnly, signalCredentials, debug, isDev) => {
   }
 
   let iceServers = [{
-    urls: [`turn:${ip}`],
+    urls: [`turn:${ip}${isDev? '': ':5349'}`],
     username: signalCredentials.key,
     credential: signalCredentials.token,
   }, {
-    urls: [`stun:${ip}`],
+    urls: [`stun:${ip}${isDev? '': ':5349'}`],
     username: signalCredentials.key,
     credential: signalCredentials.token,
   }];
