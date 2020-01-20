@@ -392,6 +392,7 @@ module.exports = function(webpackEnv) {
                 ),
                 
                 plugins: [
+                  '@babel/plugin-transform-async-to-generator',
                   [
                     require.resolve('babel-plugin-named-asset-import'),
                     {
