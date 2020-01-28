@@ -1,9 +1,9 @@
 /*!
  * 
  *   rpturn v1.0.5
- *   https://github.com/klimentLambevski/rpturn
+ *   https://github.com/rpturn/turn
  * 
- *   Copyright (c) Kliment Lambevski (https://github.com/klimentLambevski)
+ *   Copyright (c) RemotePC (https://github.com/rpturn)
  * 
  *   This source code is licensed under the MIT license found in the
  *   LICENSE file in the root directory of this source tree.
