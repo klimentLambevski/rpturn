@@ -3,11 +3,11 @@ import {createPeer} from "./peer";
 import {getRpConfig} from "./config";
 import {createApiGetRequest, getServerListApi} from "./api";
 
-const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false}) => {
+const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false, isSeq = false}) => {
     const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
     return getServerList(signalCredentials, isDev)
-        .then((ips) => checkServersLatency(ips, isDev))
+        .then((ips) => isSeq? checkServersLatencySeq(ips, isDev): checkServersLatency(ips, isDev))
         .then((res) => {
             res = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return createPeer(id, turnServer ? {ip: turnServer} : res, turnOnly, signalCredentials, debug)
@@ -65,6 +65,56 @@ const checkServersLatency = (ips, isDev) => {
             return latencyList.find((ll) => ll.delay === min)
         })
 };
+
+const checkServersLatencySeq = (ips, isDev) => {
+    return runSeqHealthCheck(ips, isDev, [])
+        .then(latencyList => {
+            console.log('seq results', latencyList)
+            let min = Math.min(...latencyList.map(ll => ll.delay));
+            return latencyList.find((ll) => ll.delay === min)
+        })
+};
+
+const invokeHealthCheck = (ip, endpoint) => {
+    let start = window.performance.now();
+    return createApiGetRequest(endpoint)
+        .then(() => {
+            let delay = window.performance.now() - start;
+            return {
+                delay,
+                ip
+            }
+        })
+        .catch(() => {
+            return {
+                delay: 2000,
+                ip
+            }
+        });
+};
+
+const runSeqHealthCheck = (ips, isDev, results = []) => {
+    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    let ip = ips.slice(0, 1);
+    return invokeHealthCheck(ip, `https://${ip}${RPConfig.healthCheckEndpoint}`)
+        .then((res) => {
+            let restOfIps = ips.slice(1);
+            if(restOfIps.length) {
+                return runSeqHealthCheck(restOfIps, isDev, results)
+                    .then(ress => [...ress, res])
+            } else {
+                return [...results, res]
+            }
+        })
+        .catch(() => {
+            let restOfIps = ips.slice(1);
+            if(restOfIps.length) {
+                return runSeqHealthCheck(restOfIps, isDev, results)
+            } else {
+                return results
+            }
+        })
+}
 
 function randomIntFromInterval(min, max) { // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
