@@ -1,13 +1,19 @@
 import {getUsernamePasswordFromCredentials} from "./utils";
 import {createPeer} from "./peer";
 import {getRpConfig} from "./config";
-import {createApiGetRequest, getServerListApi} from "./api";
+import {createApiGetRequest, getServerListApi, listNearbyInstances} from "./api";
 
-const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false, isSeq = false}) => {
+const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false, isSeq = false, isGeoSearch = false}) => {
     const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
-    return getServerList(signalCredentials, isDev)
-        .then((ips) => isSeq? checkServersLatencySeq(ips, isDev): checkServersLatency(ips, isDev))
+    let promise = null;
+    if(isGeoSearch) {
+        promise = getServerListGeo(signalCredentials, isDev)
+    } else {
+        promise = getServerList(signalCredentials, isDev)
+            .then((ips) => isSeq? checkServersLatencySeq(ips, isDev): checkServersLatency(ips, isDev))
+    }
+    return promise
         .then((res) => {
             res = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return createPeer(id, turnServer ? {ip: turnServer} : res, turnOnly, signalCredentials, debug)
@@ -35,6 +41,28 @@ const getIceServers = ({credentials, isDev}) => {
 
 const getServerList = (credentials, isDev) => {
     const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    return getServerListApi(RPConfig.apiUrl, {
+        key: credentials.key,
+        token: credentials.token
+    }).then(({data: {ips}}) => ips)
+};
+
+const getServerListGeo = (credentials, isDev) => {
+    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    createApiGetRequest(`https://global.rpturn.com/api/me`)
+        .then((res) => {
+            let ip = res.data.serverIp;
+            return listNearbyInstances(RPConfig.apiUrl, ip, {
+                key: credentials.key,
+                token: credentials.token
+            })
+        }).then(({data: {res}}) => {
+            if(res.instances.length) {
+                return checkServersLatency(res.instances, isDev)
+            } else {
+                return {ip: res.domain}
+            }
+         })
     return getServerListApi(RPConfig.apiUrl, {
         key: credentials.key,
         token: credentials.token

@@ -31,7 +31,28 @@ const getServerListApi = (url, headers) => {
   }).then(response =>  response.json())
 };
 
+const listNearbyInstances = (url, ip, headers) => {
+  return fetch(url,{
+    method: 'POST',
+    body:JSON.stringify( {
+      query: `
+        query { res:listNearbyInstances(input:{ipAddress:"${ip}"}){
+          domain
+          instances
+        }}
+      `,
+      variables: {}
+    }),
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json'
+    },
+  }).then(response =>  response.json())
+};
+
+
 export {
   createApiGetRequest,
-  getServerListApi
+  getServerListApi,
+  listNearbyInstances
 }
