@@ -7,11 +7,11 @@ const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev =
     const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
     let promise = null;
-    if(isGeoSearch) {
+    if (isGeoSearch) {
         promise = getServerListGeo(signalCredentials, isDev)
     } else {
         promise = getServerList(signalCredentials, isDev)
-            .then((ips) => isSeq? checkServersLatencySeq(ips, isDev): checkServersLatency(ips, isDev))
+            .then((ips) => isSeq ? checkServersLatencySeq(ips, isDev) : checkServersLatency(ips, isDev))
     }
     return promise
         .then((res) => {
@@ -21,18 +21,18 @@ const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev =
 };
 
 const getIceServers = ({credentials, isDev}) => {
-    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
     return getServerList(signalCredentials, isDev)
         .then((ips) => checkServersLatency(ips))
         .then(res => {
             let {ip} = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return [{
-                    urls: [`turn:${ip}${isDev? '': ':5349'}`],
+                urls: [`turn:${ip}${isDev ? '' : ':5349'}`],
                 username: signalCredentials.key,
                 credential: signalCredentials.token,
             }, {
-                urls: [`stun:${ip}${isDev? '': ':5349'}`],
+                urls: [`stun:${ip}${isDev ? '' : ':5349'}`],
                 username: signalCredentials.key,
                 credential: signalCredentials.token,
             }];
@@ -40,7 +40,7 @@ const getIceServers = ({credentials, isDev}) => {
 };
 
 const getServerList = (credentials, isDev) => {
-    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     return getServerListApi(RPConfig.apiUrl, {
         key: credentials.key,
         token: credentials.token
@@ -48,22 +48,23 @@ const getServerList = (credentials, isDev) => {
 };
 
 const getServerListGeo = (credentials, isDev) => {
-    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     createApiGetRequest(`https://global.rpturn.com/api/me`)
-        .then((res) => {
-            console.log("res", res)
+        .then((resp) => resp.json())
+        .then(function (res) {
+            console.log("res", res);
             let ip = res.data.serverIp;
             return listNearbyInstances(RPConfig.apiUrl, ip, {
                 key: credentials.key,
                 token: credentials.token
             })
         }).then(({data: {res}}) => {
-            if(res.instances.length) {
-                return checkServersLatency(res.instances, isDev)
-            } else {
-                return {ip: res.domain}
-            }
-         })
+        if (res.instances.length) {
+            return checkServersLatency(res.instances, isDev)
+        } else {
+            return {ip: res.domain}
+        }
+    })
     return getServerListApi(RPConfig.apiUrl, {
         key: credentials.key,
         token: credentials.token
@@ -71,7 +72,7 @@ const getServerListGeo = (credentials, isDev) => {
 };
 
 const checkServersLatency = (ips, isDev) => {
-    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     return Promise.all(ips.map(ip => {
         let start = window.performance.now();
         return createApiGetRequest(`https://${ip}${RPConfig.healthCheckEndpoint}`)
@@ -123,12 +124,12 @@ const invokeHealthCheck = (ip, endpoint) => {
 };
 
 const runSeqHealthCheck = (ips, isDev, results = []) => {
-    const RPConfig = getRpConfig(isDev? 'dev': 'prod');
+    const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     let ip = ips.slice(0, 1);
     return invokeHealthCheck(ip, `https://${ip}${RPConfig.healthCheckEndpoint}`)
         .then((res) => {
             let restOfIps = ips.slice(1);
-            if(restOfIps.length) {
+            if (restOfIps.length) {
                 return runSeqHealthCheck(restOfIps, isDev, results)
                     .then(ress => [...ress, res])
             } else {
@@ -137,7 +138,7 @@ const runSeqHealthCheck = (ips, isDev, results = []) => {
         })
         .catch(() => {
             let restOfIps = ips.slice(1);
-            if(restOfIps.length) {
+            if (restOfIps.length) {
                 return runSeqHealthCheck(restOfIps, isDev, results)
             } else {
                 return results
