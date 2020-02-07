@@ -58,7 +58,7 @@ const getServerListGeo = (credentials, isDev) => {
                 token: credentials.token
             })
         })
-        .then(({data: {res}}) => {
+        .then(res => {
             if (res.instances.length) {
                 return checkServersLatency(res.instances, isDev)
             } else {

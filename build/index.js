@@ -1,6 +1,6 @@
 /*!
  * 
- *   rpturn v1.0.71
+ *   rpturn v1.0.72
  *   https://github.com/rpturn/turn
  * 
  *   Copyright (c) RemotePC (https://github.com/rpturn)
