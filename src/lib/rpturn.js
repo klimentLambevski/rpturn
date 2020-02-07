@@ -50,21 +50,21 @@ const getServerList = (credentials, isDev) => {
 const getServerListGeo = (credentials, isDev) => {
     const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     createApiGetRequest(`https://global.rpturn.com/api/me`)
-        .then((resp) => resp.json())
-        .then(function (res) {
+        .then((res) => {
             console.log("res", res);
-            let ip = res.data.serverIp;
+            let ip = res.serverIp;
             return listNearbyInstances(RPConfig.apiUrl, ip, {
                 key: credentials.key,
                 token: credentials.token
             })
-        }).then(({data: {res}}) => {
-        if (res.instances.length) {
-            return checkServersLatency(res.instances, isDev)
-        } else {
-            return {ip: res.domain}
-        }
-    })
+        })
+        .then(({data: {res}}) => {
+            if (res.instances.length) {
+                return checkServersLatency(res.instances, isDev)
+            } else {
+                return {ip: res.domain}
+            }
+        })
     return getServerListApi(RPConfig.apiUrl, {
         key: credentials.key,
         token: credentials.token
