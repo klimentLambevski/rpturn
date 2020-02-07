@@ -51,6 +51,7 @@ const getServerListGeo = (credentials, isDev) => {
     const RPConfig = getRpConfig(isDev? 'dev': 'prod');
     createApiGetRequest(`https://global.rpturn.com/api/me`)
         .then((res) => {
+            console.log("res", res)
             let ip = res.data.serverIp;
             return listNearbyInstances(RPConfig.apiUrl, ip, {
                 key: credentials.key,
