@@ -8,12 +8,12 @@ function timeout(ms, promise) {
     })
 }
 
-const createApiGetRequest = (url, headers = {}) => {
+const createApiGetRequest = (url, headers = {}, options = {}) => {
     return timeout(2000, fetch(url, {
             method: 'GET',
             headers
         })
-            .then((resp) => resp.json())
+            .then((resp) => options.json? resp.json(): resp)
     )
 
 };

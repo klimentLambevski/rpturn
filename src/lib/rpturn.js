@@ -15,6 +15,7 @@ const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev =
     }
     return promise
         .then((res) => {
+            console.log('this is res', res)
             res = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return createPeer(id, turnServer ? {ip: turnServer} : res, turnOnly, signalCredentials, debug)
         })
@@ -49,9 +50,8 @@ const getServerList = (credentials, isDev) => {
 
 const getServerListGeo = (credentials, isDev) => {
     const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
-    createApiGetRequest(`https://global.rpturn.com/api/me`)
+    return createApiGetRequest(`https://global.rpturn.com/api/me`, {}, {json: true})
         .then((res) => {
-            console.log("res", res);
             let ip = res.serverIp;
             return listNearbyInstances(RPConfig.apiUrl, ip, {
                 key: credentials.key,
@@ -59,16 +59,13 @@ const getServerListGeo = (credentials, isDev) => {
             })
         })
         .then(({data: {res}}) => {
+            console.log('createApiGetRequest 2', res);
             if (res.instances.length) {
                 return checkServersLatency(res.instances, isDev)
             } else {
                 return {ip: res.domain}
             }
-        })
-    return getServerListApi(RPConfig.apiUrl, {
-        key: credentials.key,
-        token: credentials.token
-    }).then(({data: {ips}}) => ips)
+        });
 };
 
 const checkServersLatency = (ips, isDev) => {
@@ -83,7 +80,8 @@ const checkServersLatency = (ips, isDev) => {
                     ip
                 }
             })
-            .catch(() => {
+            .catch((err) => {
+                console.log(err)
                 return {
                     delay: 2000,
                     ip
