@@ -3,7 +3,7 @@ import {createPeer} from "./peer";
 import {getRpConfig} from "./config";
 import {createApiGetRequest, getServerListApi, listNearbyInstances} from "./api";
 
-const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false, isSeq = false, isGeoSearch = false}) => {
+const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev = false, isSeq = false, isGeoSearch = true}) => {
     const RPConfig = getRpConfig(isDev ? 'dev' : 'prod');
     let signalCredentials = getUsernamePasswordFromCredentials(credentials);
     let promise = null;
@@ -58,12 +58,10 @@ const getServerListGeo = (credentials, isDev) => {
             })
         })
         .then(({data: {res}}) => {
-            console.log('============= GEO SEARCH HIT =========> ', res.domain)
             if (res.instances.length) {
                 return checkServersLatency(res.instances, isDev) //check double for more accuracy because on the first request the certificate and DNS lookup is donew
                     .then(() => checkServersLatency(res.instances, isDev))
                     .then((res) => {
-                        console.log('============= LATENCY SEARCH HIT =========> ', res.ip)
                         return res
                     })
             } else {
