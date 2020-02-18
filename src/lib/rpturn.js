@@ -15,7 +15,6 @@ const init = ({credentials, id, turnOnly = false, debug = 0, turnServer, isDev =
     }
     return promise
         .then((res) => {
-            console.log('this is res', res)
             res = res && res.delay < 4000 ? res : [{ip: RPConfig.fallbackTurnServer}];
             return createPeer(id, turnServer ? {ip: turnServer} : res, turnOnly, signalCredentials, debug)
         })
@@ -59,9 +58,14 @@ const getServerListGeo = (credentials, isDev) => {
             })
         })
         .then(({data: {res}}) => {
-            console.log('createApiGetRequest 2', res);
+            console.log('============= GEO SEARCH HIT =========> ', res.domain)
             if (res.instances.length) {
-                return checkServersLatency(res.instances, isDev)
+                return checkServersLatency(res.instances, isDev) //check double for more accuracy because on the first request the certificate and DNS lookup is donew
+                    .then(() => checkServersLatency(res.instances, isDev))
+                    .then((res) => {
+                        console.log('============= LATENCY SEARCH HIT =========> ', res.ip)
+                        return res
+                    })
             } else {
                 return {ip: res.domain}
             }
@@ -81,7 +85,6 @@ const checkServersLatency = (ips, isDev) => {
                 }
             })
             .catch((err) => {
-                console.log(err)
                 return {
                     delay: 2000,
                     ip
@@ -97,7 +100,6 @@ const checkServersLatency = (ips, isDev) => {
 const checkServersLatencySeq = (ips, isDev) => {
     return runSeqHealthCheck(ips, isDev, [])
         .then(latencyList => {
-            console.log('seq results', latencyList)
             let min = Math.min(...latencyList.map(ll => ll.delay));
             return latencyList.find((ll) => ll.delay === min)
         })
